@@ -1,8 +1,8 @@
 import json
-import logging
 from time import sleep
 
 from tools import today, list_files, write_cover_letter, read_file, read_web_page, get_user_input
+
 
 # logger = logging.getLogger('CLAgent')
 # logging.basicConfig(level=logging.INFO)
