@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import date
 
 import requests
@@ -10,15 +11,15 @@ def list_files(path):
     return os.listdir(path)
 
 
-def read_file(file_name):
+def read_file(file_path):
     content = ''
-    if file_name.endswith(".pdf"):
-        reader = PdfReader(file_name)
+    if file_path.endswith(".pdf"):
+        reader = PdfReader(file_path)
         for page in reader.pages:
             content += f'{page.extract_text()}\n'
         reader.close()
     else:
-        file = open(file_name, "r")
+        file = open(file_path, "r")
         content = file.read()
         file.close()
     return content.encode('ascii', errors='ignore').decode()
@@ -41,3 +42,9 @@ def today():
 
 def write_cover_letter(content):
     print(content)
+    return "cover letter content written"
+
+
+def terminate(message):
+    print(message)
+    sys.exit(0)

@@ -1,11 +1,20 @@
 import json
 from time import sleep
 
-from tools import today, list_files, write_cover_letter, read_file, read_web_page, get_user_input
+from const import *
+from tools import *
 
 
-# logger = logging.getLogger('CLAgent')
-# logging.basicConfig(level=logging.INFO)
+class LLMResponseFormatError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class UnkownActionError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
 
 
 class CLAgent:
@@ -16,10 +25,26 @@ class CLAgent:
             sys_prompt_content = file.read()
 
         self.sys_prompt = [{
-            "role": "system",
-            "content": sys_prompt_content
+            ROLE: SYSTEM,
+            CONTENT: sys_prompt_content
         }]
         self.memory = []
+        self.tool_to_action = {
+            LIST_FILES: list_files,
+            READ_FILE: read_file,
+            READ_WEB_PAGE: read_web_page,
+            ASK_USER: get_user_input,
+            DATE_TODAY: today,
+            OUTPUT_COVER_LETTER: write_cover_letter,
+            TERMINATE: terminate,
+        }
+
+    def execute_action(self, action):
+        tool_name = action[TOOL_NAME]
+        args = action[ARGS]
+        if tool_name not in self.tool_to_action:
+            raise UnkownActionError(f"Unknown tool: {json.dumps(action)}")
+        return self.tool_to_action[tool_name](**args)
 
     @staticmethod
     def extract_markdown_block(response, block_type="json"):
@@ -33,70 +58,84 @@ class CLAgent:
 
         return code_block
 
-    def parse_llm_response(self, response: str):
+    def parse_llm_response(self, response):
         try:
-            response = self.extract_markdown_block(response, "action")
+            response = self.extract_markdown_block(response, ACTION)
             response_json = json.loads(response)
-            if "tool_name" in response_json and "args" in response_json:
+            if TOOL_NAME in response_json and ARGS in response_json:
                 return response_json
             else:
-                return {
-                    "tool_name": "error",
-                    "args": {
-                        "message": "Invalid response. "
-                                   "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
-                    }
-                }
+                # return {
+                #     TOOL_NAME: "error",
+                #     "args": {
+                #         "message": "Invalid response. "
+                #                    "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
+                #     }
+                # }
+                raise LLMResponseFormatError(f"Invalid response. You must respond in JSON format tool invocation "
+                                             f"with {TOOL_NAME} and {ARGS}")
         except json.JSONDecodeError:
-            return {
-                "tool_name": "error",
-                "args": {
-                    "message": "Invalid JSON. "
-                               "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
-                }
-            }
+            # return {
+            #     TOOL_NAME: "error",
+            #     "args": {
+            #         "message": "Invalid JSON. "
+            #                    "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
+            #     }
+            # }
+            raise LLMResponseFormatError(f"Invalid JSON. You must respond in JSON format tool invocation "
+                                         f"with {TOOL_NAME} and {ARGS}")
 
     def loop(self, vacancy_url):
         iteration = 0
         print(f'Vacancy URL: {vacancy_url}')
-        self.memory.extend([{"role": "user", "content": vacancy_url}])
+        self.extend_memory(USER, vacancy_url)
 
         while iteration < self.max_iterations:
             # 1. Construct prompt: Combine agent rules with memory
             prompt = self.sys_prompt + self.memory
+
             # 2. Generate response from LLM
             response = self.llm.invoke(prompt)
             print(f"Agent response: {response}")
-            sleep(2)
+            iteration += 1
+
             # 3. Parse response to determine action
-            action = self.parse_llm_response(response)
-            tool_name = action["tool_name"]
-            if tool_name == "list_files":
-                result = {"result": list_files(action["args"]["path"])}
-            elif tool_name == "read_file":
-                result = {"result": read_file(action["args"]["file_path"])}
-            elif tool_name == "read_web_page":
-                result = {"result": read_web_page(action["args"]["url"])}
-            elif tool_name == "ask_user":
-                result = {"result": get_user_input(action["args"]["question"])}
-            elif tool_name == "get_date_today":
-                result = {"result": today()}
-            elif tool_name == "output_cover_letter":
-                result = {"result": write_cover_letter(action["args"]["content"])}
-            elif tool_name == "terminate":
-                print(action["args"]["message"])
-                break
-            elif tool_name == "error":
-                result = {"error": action["args"]["message"]}
-            else:
-                result = {"error": "Unknown action: " + json.dumps(action)}
+            try:
+                action = self.parse_llm_response(response)
+            except LLMResponseFormatError as e:
+                self.extend_user_and_assistant_memory(
+                    response,
+                    {
+                        RESULT: f"error: {e.message}"
+                    })
+                continue
+
+            # 4. Carry out the action and capture the result
+            try:
+                result = self.execute_action(action)
+            except UnkownActionError as e:
+                self.extend_user_and_assistant_memory(
+                    response,
+                    {
+                        RESULT: f"error: {e.message}"
+                    })
+                continue
 
             print(f"Action result: {result}")
 
-            # 6. Update memory with response and results
-            self.memory.extend([
-                {"role": "assistant", "content": response},
-                {"role": "user", "content": json.dumps(result)}
-            ])
+            # 5. Update memory with response and results
+            self.extend_user_and_assistant_memory(response, json.dumps(result))
 
-            iteration += 1
+            # Keep a time gap between API calls
+            sleep(2)
+
+    def extend_user_and_assistant_memory(self, asst_msg, user_msg):
+        self.extend_memory(ASSISTANT, asst_msg)
+        self.extend_memory(USER, user_msg)
+
+    def extend_memory(self, role_name, content):
+        self.memory.extend([
+            {
+                ROLE: role_name, CONTENT: content
+            },
+        ])
