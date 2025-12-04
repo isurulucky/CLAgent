@@ -7,7 +7,7 @@ class LLM:
 
 
 class OpenAILLM(LLM):
-    def __init__(self, api_key, model='openai/gpt-5', max_tokens=2048):
+    def __init__(self, api_key, model='openai/gpt-4o', max_tokens=2048):
         self.model = model
         self.api_key = api_key
         self.max_tokens = max_tokens
