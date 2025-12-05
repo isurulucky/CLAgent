@@ -1,4 +1,9 @@
+import logging
+
 from litellm import completion
+
+litellm_logger = logging.getLogger("LiteLLM")
+litellm_logger.setLevel(logging.WARNING)
 
 
 class LLM:
@@ -17,5 +22,6 @@ class OpenAILLM(LLM):
             api_key=self.api_key,
             model=self.model,
             messages=message,
-            max_tokens=self.max_tokens)
+            max_tokens=self.max_tokens
+        )
         return response.choices[0].message.content.strip()

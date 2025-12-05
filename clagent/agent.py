@@ -1,8 +1,34 @@
 import json
+import logging
+import os
+from datetime import date
 from time import sleep
 
-from const import *
-from tools import *
+import requests
+from bs4 import BeautifulSoup
+from pypdf import PdfReader
+
+logger = logging.getLogger(__name__)
+
+# tools
+OUTPUT_COVER_LETTER = "output_cover_letter"
+DATE_TODAY = "get_date_today"
+ASK_USER = "ask_user"
+READ_WEB_PAGE = "read_web_page"
+READ_FILE = "read_file"
+LIST_FILES = "list_files"
+TERMINATE = "terminate"
+
+# other constants
+ARGS = "args"
+ACTION = "action"
+USER = "user"
+RESULT = "result"
+TOOL_NAME = "tool_name"
+SYSTEM = "system"
+CONTENT = "content"
+ROLE = "role"
+ASSISTANT = "assistant"
 
 
 class LLMResponseFormatError(Exception):
@@ -11,7 +37,7 @@ class LLMResponseFormatError(Exception):
         super().__init__(self.message)
 
 
-class UnkownActionError(Exception):
+class UnknownActionError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
@@ -43,7 +69,7 @@ class CLAgent:
         tool_name = action[TOOL_NAME]
         args = action[ARGS]
         if tool_name not in self.tool_to_action:
-            raise UnkownActionError(f"Unknown tool: {json.dumps(action)}")
+            raise UnknownActionError(f"Unknown tool: {json.dumps(action)}")
         return self.tool_to_action[tool_name](**args)
 
     @staticmethod
@@ -65,29 +91,14 @@ class CLAgent:
             if TOOL_NAME in response_json and ARGS in response_json:
                 return response_json
             else:
-                # return {
-                #     TOOL_NAME: "error",
-                #     "args": {
-                #         "message": "Invalid response. "
-                #                    "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
-                #     }
-                # }
                 raise LLMResponseFormatError(f"Invalid response. You must respond in JSON format tool invocation "
                                              f"with {TOOL_NAME} and {ARGS}")
         except json.JSONDecodeError:
-            # return {
-            #     TOOL_NAME: "error",
-            #     "args": {
-            #         "message": "Invalid JSON. "
-            #                    "You must respond in JSON format tool invocation with 'tool_name' and 'args'."
-            #     }
-            # }
             raise LLMResponseFormatError(f"Invalid JSON. You must respond in JSON format tool invocation "
                                          f"with {TOOL_NAME} and {ARGS}")
 
     def loop(self, vacancy_url):
         iteration = 0
-        print(f'Vacancy URL: {vacancy_url}')
         self.extend_memory(USER, vacancy_url)
 
         while iteration < self.max_iterations:
@@ -96,7 +107,7 @@ class CLAgent:
 
             # 2. Generate response from LLM
             response = self.llm.invoke(prompt)
-            print(f"Agent response: {response}")
+            logger.info(f"LLM response: {response}")
             iteration += 1
 
             # 3. Parse response to determine action
@@ -112,16 +123,18 @@ class CLAgent:
 
             # 4. Carry out the action and capture the result
             try:
-                result = self.execute_action(action)
-            except UnkownActionError as e:
+                result, terminate_loop = self.execute_action(action)
+            except UnknownActionError as e:
                 self.extend_user_and_assistant_memory(
                     response,
                     {
                         RESULT: f"error: {e.message}"
                     })
                 continue
+            if terminate_loop:
+                break
 
-            print(f"Action result: {result}")
+            logger.info(f"Action result: {result}")
 
             # 5. Update memory with response and results
             self.extend_user_and_assistant_memory(response, json.dumps(result))
@@ -139,3 +152,46 @@ class CLAgent:
                 ROLE: role_name, CONTENT: content
             },
         ])
+
+
+def list_files(path):
+    return os.listdir(path), False
+
+
+def read_file(file_path):
+    content = ''
+    if file_path.endswith(".pdf"):
+        reader = PdfReader(file_path)
+        for page in reader.pages:
+            content += f'{page.extract_text()}\n'
+        reader.close()
+    else:
+        file = open(file_path, "r")
+        content = file.read()
+        file.close()
+    return content.encode('ascii', errors='ignore').decode(), False
+
+
+def read_web_page(url):
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, "html.parser")
+    return soup.text.encode('ascii', errors='ignore').decode(), False
+
+
+def get_user_input(question):
+    return input(question), False
+
+
+def today():
+    t = date.today()
+    return t.strftime("%B %d, %Y"), False
+
+
+def write_cover_letter(content):
+    print(content)
+    return "cover letter content written", False
+
+
+def terminate(message):
+    print(message)
+    return None, True

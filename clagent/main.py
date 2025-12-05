@@ -1,8 +1,15 @@
+import logging
 import os
 
 from agent import CLAgent
 from cmdline import parse_args
 from llm import OpenAILLM
+
+logging.basicConfig(
+    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    level=logging.INFO
+)
 
 if __name__ == '__main__':
     # parse commandline args
