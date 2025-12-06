@@ -18,3 +18,5 @@ Currently, the app depends on OpenAI GPT APIs to access LLM functionality.
 - A sample command for reference:
 
 ```python clagent_app.py --cv ./resources/cvs/CV-John_Snow.pdf --vacancy-url https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt --sample-cover-letter-dir ./resources/sample_cover_letters```
+
+Tested with Python 3.11.5.
