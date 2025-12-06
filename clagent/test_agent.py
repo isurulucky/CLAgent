@@ -97,7 +97,7 @@ class HardcodedLLM(LLM):
 class TestAgent(unittest.TestCase):
     def test_loop(self):
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
-        vacancy_url = 'https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt'
+        vacancy_url = 'https://gist.github.com/isurulucky/28f38eeb1cf37763390ae6074093b735'
         cv = './resources/CV-John_Snow.pdf'
         sample_cover_letters = './resources/sample_cover_letters'
         llm = HardcodedLLM()
