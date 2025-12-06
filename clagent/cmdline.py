@@ -4,7 +4,7 @@ VACANCY_URL = '--vacancy-url'
 CV = '--cv'
 SAMPLE_COVER_LETTER_DIR = '--sample-cover-letter-dir'
 SYS_PROMPT_FILE_PATH = '--sys-prompt-file-path'
-
+LLM_MODEL = '--llm-model'
 
 # commandline argument parsing
 def parse_args():
@@ -34,5 +34,12 @@ def parse_args():
         required=False,
         default='./system.prompt',
         help='File path which contain the system prompt'
+    )
+    arg_parser.add_argument(
+        f'{LLM_MODEL}',
+        type=str,
+        required=False,
+        default='',
+        help='Model identifier of LLM implementation, ex: openai/gpt-5'
     )
     return arg_parser.parse_args()

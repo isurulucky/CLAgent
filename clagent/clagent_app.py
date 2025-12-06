@@ -19,6 +19,6 @@ if __name__ == '__main__':
     if api_key is None:
         raise ValueError("Environment variable LLM_API_KEY must be set.")
 
-    llm = OpenAILLM(api_key)
+    llm = OpenAILLM(api_key, args.llm_model)
     agent = CLAgent(args.sys_prompt_file_path, llm)
     agent.loop(args.vacancy_url, args.cv, args.sample_cover_letter_dir)
