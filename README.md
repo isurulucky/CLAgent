@@ -1,6 +1,7 @@
 # CLAgent
 A simple agentic commandline app to create cover letters, given a CV and a public vacancy URL. 
-Currently, the app depends on OpenAI GPT APIs to access LLM functionality.
+Currently, the app depends on OpenAI GPT APIs to access LLM functionality. 
+The finalized cover letter is written to the standard output. 
 
 ### How to Use
 
@@ -15,7 +16,11 @@ Currently, the app depends on OpenAI GPT APIs to access LLM functionality.
     - Optional ```--llm-model```: LLM mode to use, for example ```openai/gpt-5.1```. Defaults to ```gpt-4o``` for OpenAI.
     - Optional ```--sys-prompt-file-path```: path to a file containing main system prompt. See the existing system prompt in ```system.prompt``` file for modifications.
 
-- A sample command for reference:
+If the application is unable to read the vacancy URL or the CV for any reason, it will prompt the user to enter the information manually via standard input.
+In such cases, the content of the vacancy page or CV should be copied and reformatted to remove line breaks before being provided as input to the application. 
+This can be done using any online text-formatting tool available through a web search.
+
+A sample command for reference:
 
 ```python clagent_app.py --cv ./resources/cvs/CV-John_Snow.pdf --vacancy-url https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt --sample-cover-letter-dir ./resources/sample_cover_letters```
 
