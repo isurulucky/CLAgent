@@ -1,4 +1,4 @@
-# CLAgent
+# Cover Letter Writing Agent
 A simple agentic commandline app to create cover letters, given a CV and a public vacancy URL. 
 Currently, the app depends on OpenAI GPT APIs to access LLM functionality. 
 The finalized cover letter is written to the standard output. 
