@@ -10,8 +10,8 @@ Currently, the app depends on OpenAI GPT APIs to access LLM functionality.
 - Run as a commandline app, using ```python clagent_app.py```. The following arguments are supported:
 
     - Mandatory ```--vacancy-url```: URL of the public vacancy post.
-    - Mandatory ```--cv```: path to the CV file. Currently only PDF and text files are accepted.
-    - Optional ```--sample-cover-letter-dir```: path to a directory containing sample cover letters.
+    - Mandatory ```--cv```: absolute path to the CV file. Currently only PDF and text files are accepted.
+    - Optional ```--sample-cover-letter-dir```: absolute path to a directory containing sample cover letters.
     - Optional ```--llm-model```: LLM mode to use, for example ```openai/gpt-5.1```. Defaults to ```gpt-4o``` for OpenAI.
     - Optional ```--sys-prompt-file-path```: path to a file containing main system prompt. See the existing system prompt in ```system.prompt``` file for modifications.
 
