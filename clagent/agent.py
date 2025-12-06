@@ -17,6 +17,7 @@ ASK_USER = "ask_user"
 READ_WEB_PAGE = "read_web_page"
 READ_FILE = "read_file"
 LIST_FILES = "list_files"
+DIRECTORY_EXISTS = "directory_exists"
 TERMINATE = "terminate"
 
 # other constants
@@ -56,6 +57,7 @@ class CLAgent:
         }]
         self.memory = []
         self.tool_to_action = {
+            DIRECTORY_EXISTS: directory_exists,
             LIST_FILES: list_files,
             READ_FILE: read_file,
             READ_WEB_PAGE: read_web_page,
@@ -97,8 +99,17 @@ class CLAgent:
             raise LLMResponseFormatError(f"Invalid JSON. You must respond in JSON format tool invocation "
                                          f"with {TOOL_NAME} and {ARGS}")
 
-    def loop(self, vacancy_url):
+    def loop(self, vacancy_url, cv_path, sample_cover_letter_dir):
         iteration = 0
+
+        self.sys_prompt[0][CONTENT] = (self.sys_prompt[0][CONTENT].
+                                       replace('__CV_PATH__', cv_path))
+        if sample_cover_letter_dir.strip() == '':
+            # specify a non-existing directory, the existence will be checked by the agent
+            sample_cover_letter_dir = './non_existing_cover_letter_dir'
+        self.sys_prompt[0][CONTENT] = (self.sys_prompt[0][CONTENT].
+                                       replace('__SAMPLE_COVER_LETTER_DIR__', sample_cover_letter_dir))
+
         self.extend_memory(USER, vacancy_url)
 
         while iteration < self.max_iterations:
@@ -154,6 +165,10 @@ class CLAgent:
         ])
 
 
+def directory_exists(path):
+    return os.path.isdir(path), False
+
+
 def list_files(path):
     return os.listdir(path), False
 
@@ -165,10 +180,12 @@ def read_file(file_path):
         for page in reader.pages:
             content += f'{page.extract_text()}\n'
         reader.close()
-    else:
+    elif file_path.endswith(".txt"):
         file = open(file_path, "r")
         content = file.read()
         file.close()
+    else:
+        return "", False
     return content.encode('ascii', errors='ignore').decode(), False
 
 

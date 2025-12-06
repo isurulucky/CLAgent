@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from agent import CLAgent
-from llm import LLM
+from clagent.agent import CLAgent
+from clagent.llm import LLM
 
 
 class HardcodedLLM(LLM):
@@ -13,7 +13,7 @@ class HardcodedLLM(LLM):
                 {
                     "tool_name": "read_web_page",
                     "args": {
-                        "url": "https://gist.github.com/isurulucky/28f38eeb1cf37763390ae6074093b735"
+                        "url": "https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt"
                     }
                 }```
             ''',
@@ -38,13 +38,23 @@ class HardcodedLLM(LLM):
             8: '''
             ```action
                 {
+                    "tool_name": "directory_exists",
+                    "args": {
+                        "path": "./resources/sample_cover_letters"
+                    }
+                }
+            ```
+            ''',
+            10: '''
+            ```action
+                {
                     "tool_name": "list_files",
                     "args": {
                         "path": "./resources/sample_cover_letters"
                     }
                 }```
             ''',
-            10: '''
+            12: '''
             ```action
                 {
                     "tool_name": "read_file",
@@ -53,14 +63,14 @@ class HardcodedLLM(LLM):
                     }
                 }```
             ''',
-            12: '''
+            14: '''
             ```action
                 {
                     "tool_name": "get_date_today",
                     "args": {}
                 }```
             ''',
-            14: '''
+            16: '''
             ```action
                 {
                     "tool_name": "output_cover_letter",
@@ -69,7 +79,7 @@ class HardcodedLLM(LLM):
                     }
                 }```
             ''',
-            16: '''
+            18: '''
             ```action
                 {
                     "tool_name": "terminate",
@@ -87,7 +97,9 @@ class HardcodedLLM(LLM):
 class TestAgent(unittest.TestCase):
     def test_loop(self):
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        vacancy_url = 'https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt'
+        cv = './resources/CV-John_Snow.pdf'
+        sample_cover_letters = './resources/sample_cover_letters'
         llm = HardcodedLLM()
         agent = CLAgent('./system.prompt', llm)
-        agent.loop('https://gist.githubusercontent.com/isurulucky/28f38eeb1cf37763390ae6074093b735/'
-                   'raw/0e2035dbf6e5d82cade37fb90d0d94f6ab4d166d/gistfile1.txt')
+        agent.loop(vacancy_url, cv, sample_cover_letters)

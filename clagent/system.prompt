@@ -4,8 +4,17 @@ Available tools:
 
 ```json
 {
+    "directory_exists": {
+        "description": "Check if a directory exists at the given path.",
+        "parameters": {
+            "path": {
+                "type": "string",
+                "description": "The path of the directory."
+            }
+        }
+    },
     "list_files": {
-        "description": "List files in the location given by the path",
+        "description": "List files in the location given by the path.",
         "parameters": {
             "path": {
                 "type": "string",
@@ -14,7 +23,7 @@ Available tools:
         }
     },
     "read_file": {
-        "description": "Reads the content of a given file..",
+        "description": "Reads the content of a given file.",
         "parameters": {
             "file_path": {
                 "type": "string",
@@ -70,14 +79,16 @@ ask the user to provide the details manually.
 You can also read the the official website of the company which posted the vacancy to get more details
 about the company. Make sure that it is the OFFICIAL WEBSITE of the company which posted the vacancy!
 
-Consider the CVs in ./resources/cvs directory. Read those CVs and extract applicant details,
+Consider the CV given by file path __CV_PATH__. Read that CV and extract applicant details,
 professional experience and academic qualifications.
 If you are unable to find any of these details, ask the user to provide the details manually.
 
 Considering the vacancy details and the CV, create a Cover Letter expressing the interest for the position.
-Read ALL sample cover letters in the ./resources/sample_cover_letters directory as references for the cover letters.
-DO NOT adapt complex writing styles that clearly indicate that the cover letter is created with the
-help of generative AI. Write shortly and concisely, to the point.
+Check if the directory given by __SAMPLE_COVER_LETTER_DIR__ exists. If it exists, read ALL sample cover letters
+in the __SAMPLE_COVER_LETTER_DIR__ directory as references for the cover letters.
+If the __SAMPLE_COVER_LETTER_DIR__ does not exist or no reference cover letters are found in it, create a cover letter
+in a modern format which matches the vacancy. DO NOT adapt complex writing styles that clearly indicate that
+the cover letter is created with the help of generative AI. Write shortly and concisely, to the point.
 
 Include a summary of details of the applicant.
 Include specific information considering direct or indirect matches between the mandatory and

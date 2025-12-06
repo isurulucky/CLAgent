@@ -21,4 +21,4 @@ if __name__ == '__main__':
 
     llm = OpenAILLM(api_key)
     agent = CLAgent(args.sys_prompt_file_path, llm)
-    agent.loop(args.vacancy_url)
+    agent.loop(args.vacancy_url, args.cv, args.sample_cover_letter_dir)
