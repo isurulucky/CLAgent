@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from clagent.agent import CLAgent
-from clagent.llm import LLM
+from agent import CLAgent
+from llm import LLM
 
 
 class HardcodedLLM(LLM):
@@ -90,8 +90,8 @@ class HardcodedLLM(LLM):
             '''
         }
 
-    def invoke(self, message):
-        return self.memory_item_count_to_tool[len(message)]
+    def invoke(self, messages):
+        return self.memory_item_count_to_tool[len(messages)]
 
 
 class TestAgent(unittest.TestCase):

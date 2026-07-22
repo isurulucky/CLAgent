@@ -1,12 +1,8 @@
 import json
 import logging
-import os
-from datetime import date
 from time import sleep
 
-import requests
-from bs4 import BeautifulSoup
-from pypdf import PdfReader
+import tools
 
 logger = logging.getLogger(__name__)
 
@@ -57,14 +53,14 @@ class CLAgent:
         }]
         self.memory = []
         self.tool_to_action = {
-            DIRECTORY_EXISTS: directory_exists,
-            LIST_FILES: list_files,
-            READ_FILE: read_file,
-            READ_WEB_PAGE: read_web_page,
-            ASK_USER: get_user_input,
-            DATE_TODAY: today,
-            OUTPUT_COVER_LETTER: write_cover_letter,
-            TERMINATE: terminate,
+            DIRECTORY_EXISTS: tools.directory_exists,
+            LIST_FILES: tools.list_files,
+            READ_FILE: tools.read_file,
+            READ_WEB_PAGE: tools.read_web_page,
+            ASK_USER: tools.get_user_input,
+            DATE_TODAY: tools.today,
+            OUTPUT_COVER_LETTER: tools.write_cover_letter,
+            TERMINATE: tools.terminate,
         }
 
     def execute_action(self, action):
@@ -76,7 +72,7 @@ class CLAgent:
 
     @staticmethod
     def extract_markdown_block(response, block_type="json"):
-        if not '```' in response:
+        if '```' not in response:
             return response
 
         code_block = response.split('```')[1].strip()
@@ -93,11 +89,13 @@ class CLAgent:
             if TOOL_NAME in response_json and ARGS in response_json:
                 return response_json
             else:
-                raise LLMResponseFormatError(f"Invalid response. You must respond in JSON format tool invocation "
-                                             f"with {TOOL_NAME} and {ARGS}")
+                raise LLMResponseFormatError(
+                    f"Invalid response. You must respond in JSON format tool invocation "
+                    f"with {TOOL_NAME} and {ARGS}")
         except json.JSONDecodeError:
-            raise LLMResponseFormatError(f"Invalid JSON. You must respond in JSON format tool invocation "
-                                         f"with {TOOL_NAME} and {ARGS}")
+            raise LLMResponseFormatError(
+                f"Invalid JSON. You must respond in JSON format tool invocation "
+                f"with {TOOL_NAME} and {ARGS}")
 
     def loop(self, vacancy_url, cv_path, sample_cover_letter_dir):
         iteration = 0
@@ -105,10 +103,13 @@ class CLAgent:
         self.sys_prompt[0][CONTENT] = (self.sys_prompt[0][CONTENT].
                                        replace('__CV_PATH__', cv_path))
         if sample_cover_letter_dir.strip() == '':
-            # specify a non-existing directory, the existence will be checked by the agent
+            # specify a non-existing directory, the existence will be checked
+            # by the agent
             sample_cover_letter_dir = './non_existing_cover_letter_dir'
-        self.sys_prompt[0][CONTENT] = (self.sys_prompt[0][CONTENT].
-                                       replace('__SAMPLE_COVER_LETTER_DIR__', sample_cover_letter_dir))
+        self.sys_prompt[0][CONTENT] = (
+            self.sys_prompt[0][CONTENT]. replace(
+                '__SAMPLE_COVER_LETTER_DIR__',
+                sample_cover_letter_dir))
 
         self.extend_memory(USER, vacancy_url)
 
@@ -163,52 +164,3 @@ class CLAgent:
                 ROLE: role_name, CONTENT: content
             },
         ])
-
-
-def directory_exists(path):
-    return os.path.isdir(path), False
-
-
-def list_files(path):
-    return os.listdir(path), False
-
-
-def read_file(file_path):
-    content = ''
-    if file_path.endswith(".pdf"):
-        reader = PdfReader(file_path)
-        for page in reader.pages:
-            content += f'{page.extract_text()}\n'
-        reader.close()
-    elif file_path.endswith(".txt"):
-        file = open(file_path, "r")
-        content = file.read()
-        file.close()
-    else:
-        return "", False
-    return content.encode('ascii', errors='ignore').decode(), False
-
-
-def read_web_page(url):
-    r = requests.get(url)
-    soup = BeautifulSoup(r.text, "html.parser")
-    return soup.text.encode('ascii', errors='ignore').decode(), False
-
-
-def get_user_input(question):
-    return input(question), False
-
-
-def today():
-    t = date.today()
-    return t.strftime("%B %d, %Y"), False
-
-
-def write_cover_letter(content):
-    print(content)
-    return "cover letter content written", False
-
-
-def terminate(message):
-    print(message)
-    return None, True

@@ -12,7 +12,7 @@ class LLM:
 
 
 class OpenAILLM(LLM):
-    def __init__(self, api_key, model, max_tokens=2048):
+    def __init__(self, api_key, model, max_tokens=1024):
         if model == '':
             model = 'openai/gpt-4o'
         self.model = model
