@@ -31,12 +31,21 @@ Available tools:
             }
         }
     },
-    "read_web_page": {
-        "description": "Read the contents of the web page at the given url.",
+    "read_html_web_page": {
+        "description": "Read the contents of the HTML web page at the given url.",
         "parameters": {
             "url": {
                 "type": "string",
-                "description": "URL of the web page"
+                "description": "URL of the HTML web page"
+            }
+        }
+    },
+    "read_js_web_page": {
+        "description": "Read the contents of the Javascript web page at the given url.",
+        "parameters": {
+            "url": {
+                "type": "string",
+                "description": "URL of the Javascript web page"
             }
         }
     },
@@ -73,7 +82,7 @@ Available tools:
     }
 }
 ```
-At start the user will provide the URL to vacancy details. Read the content at the URL. If you are unable to read it,
+At start the user will provide the URL to vacancy details. Read the content of the HTML or Javascript based page at the URL. If you are unable to read it,
 ask the user to provide the details manually.
 
 You can also read the the official website of the company which posted the vacancy to get more details

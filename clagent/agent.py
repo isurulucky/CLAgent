@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 OUTPUT_COVER_LETTER = "output_cover_letter"
 DATE_TODAY = "get_date_today"
 ASK_USER = "ask_user"
-READ_WEB_PAGE = "read_web_page"
+READ_HTML_WEB_PAGE = "read_html_web_page"
+READ_JS_WEB_PAGE = "read_javascript_web_page"
 READ_FILE = "read_file"
 LIST_FILES = "list_files"
 DIRECTORY_EXISTS = "directory_exists"
@@ -56,7 +57,8 @@ class CLAgent:
             DIRECTORY_EXISTS: tools.directory_exists,
             LIST_FILES: tools.list_files,
             READ_FILE: tools.read_file,
-            READ_WEB_PAGE: tools.read_web_page,
+            READ_HTML_WEB_PAGE: tools.read_html_web_page,
+            READ_JS_WEB_PAGE: tools.read_js_web_page,
             ASK_USER: tools.get_user_input,
             DATE_TODAY: tools.today,
             OUTPUT_COVER_LETTER: tools.write_cover_letter,
